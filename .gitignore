@@ -169,3 +169,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+.vscode/launch.json
+.cursor/rules/rule.mdc
+agent_history.gif

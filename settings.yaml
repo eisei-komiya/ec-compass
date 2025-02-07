@@ -1,0 +1,68 @@
+product: "マザーボード"
+
+# 上位選定件数 (ユーザーはこの値を変更可能)
+top_n: 5
+
+criteria:
+  price:
+    weight: 0.4
+    threshold: 30000  # 上限価格（円）
+  quality:
+    weight: 0.3
+    checks:
+      # 条件
+      - "M.2スロット: '>=2'"
+  cost_performance:
+    weight: 0.3
+
+search_parameters:
+  # browser-use で使用するパラメータ
+
+  # ai_platform: "deepseek"
+  # search_model: "deepseek-chat"
+  # search_model: "deepseek-reasoner"
+  ai_platform: "google"
+  # search_model: "gemini-2.0-flash"
+  search_model: "gemini-2.0-flash-exp" # 無料中
+  # search_model: "gemini-2.0-pro-exp-02-05" # 無料中
+  # ai_platform: "openai"
+  # search_model: "gpt-4o"  # browser-use推奨
+  # search_model: "o1-mini"
+  # search_model: "o1-preview"
+  websites:
+  - name: "価格.com"
+    url: "https://kakaku.com/"
+  - name: "Amazon"
+    url: "https://www.amazon.co.jp/ref=nav_logo"
+  - name: "じゃんぱら"
+    url: "https://www.janpara.co.jp/"
+  - name: "楽天市場"
+    url: "https://www.rakuten.co.jp/"
+
+  keywords:
+    # 各サイトでの検索キーワード
+    - "マザーボード"
+    - "ATX"
+  
+  # 各サイトでの取得する製品数
+  return_products_num: 5
+
+  result_items:
+    # 各サイトで見つかった製品ごとに取得する情報
+    - "製品名"
+    - "価格"
+    - "URL"
+    - "ATX or microATX"
+    - "M.2スロットの数"
+
+# レポート生成で利用するモデル
+# ai_platform: "deepseek"
+# report_model: "deepseek-chat"
+# report_model: "deepseek-reasoner"
+
+ai_platform: "google"
+report_model: "gemini-2.0-flash"
+# ai_platform: "openai"
+# report_model: "gpt-4o-mini"
+# report_model: "o1-mini"
+# report_model: "o1-preview"
