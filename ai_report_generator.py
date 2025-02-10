@@ -50,6 +50,10 @@ def generate_report_with_ai(product_results, evaluation_criteria, top_n, report_
     elif ai_platform.lower() == "google":
         from langchain_google_vertexai import ChatVertexAI
         api_key = os.getenv("GOOGLE_API_KEY")
+        # 修正: gemini-2.0-flash-exp が利用できない場合、代わりに gemini-2.0-flash を使用
+        if report_model == "gemini-2.0-flash-exp":
+            print("警告: モデル gemini-2.0-flash-exp は利用できません。代わりに gemini-2.0-flash を使用します。")
+            report_model = "gemini-2.0-flash"
         llm = ChatVertexAI(model=report_model, api_key=api_key, temperature=0.7)
     elif ai_platform.lower() == "openai":
         from langchain_openai import ChatOpenAI
@@ -62,5 +66,9 @@ def generate_report_with_ai(product_results, evaluation_criteria, top_n, report_
         llm = ChatOpenAI(model=report_model, api_key=api_key, temperature=0.7)
 
     # LangChainを使ってレポート生成
-    report = llm.predict(combined_prompt)
+    try:
+        report = llm.predict(combined_prompt)
+    except Exception as e:
+        print(f"レポート生成中にエラーが発生しました: {e}. 使用しているAIプラットフォームやモデル設定を確認してください。")
+        return "レポート生成に失敗しました。"
     return report 

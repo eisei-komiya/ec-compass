@@ -35,17 +35,17 @@ def main():
     # settings.yamlから上位何件を選択するかの設定を取得（デフォルトは5件）
     top_n = config.get('top_n', 5)
 
-    # # settings.yaml の 'report_model' 設定でレポート生成に使用するモデルを指定
-    # report_model = config.get('report_model', 'gpt-4o-mini')
+    # settings.yaml の 'report_model' 設定でレポート生成に使用するモデルを指定
+    report_model = config.get('report_model', 'gpt-4o-mini')
 
-    # # OpenAI API（LangChain経由）を利用して、ユーザーの評価基準に基づいた上位製品のレポートを生成
-    # report = generate_report_with_ai(all_products, config.get('criteria', {}), top_n, report_model=report_model)
+    # OpenAI API（LangChain経由）を利用して、ユーザーの評価基準に基づいた上位製品のレポートを生成
+    report = generate_report_with_ai(all_products, config.get('criteria', {}), top_n, report_model=report_model)
 
-    # # 生成されたレポートを'report.md'ファイルに保存
-    # with open('report.md', 'w', encoding='utf-8') as f:
-    #     f.write(report)
+    # 生成されたレポートを'report.md'ファイルに保存
+    with open('report.md', 'w', encoding='utf-8') as f:
+        f.write(report)
 
-    # print('OpenAIが生成したレポートが report.md に保存されました。')
+    print('OpenAIが生成したレポートが report.md に保存されました。')
 
 
 if __name__ == '__main__':

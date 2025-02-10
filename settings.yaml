@@ -21,39 +21,45 @@ search_parameters:
   # ai_platform: "deepseek"
   # search_model: "deepseek-chat"
   # search_model: "deepseek-reasoner"
-  ai_platform: "google"
+  # ai_platform: "google"
   # search_model: "gemini-2.0-flash"
-  search_model: "gemini-2.0-flash-exp" # 無料中
+  # search_model: "gemini-2.0-flash-exp" # 無料中
   # search_model: "gemini-2.0-pro-exp-02-05" # 無料中
-  # ai_platform: "openai"
-  # search_model: "gpt-4o"  # browser-use推奨
+  ai_platform: "openai"
+  search_model: "gpt-4o"  # browser-use推奨
   # search_model: "o1-mini"
   # search_model: "o1-preview"
   websites:
-  - name: "価格.com"
-    url: "https://kakaku.com/"
+  # - name: "価格.com"
+  #   url: "https://kakaku.com/"
   - name: "Amazon"
     url: "https://www.amazon.co.jp/ref=nav_logo"
-  - name: "じゃんぱら"
-    url: "https://www.janpara.co.jp/"
-  - name: "楽天市場"
-    url: "https://www.rakuten.co.jp/"
+  # - name: "じゃんぱら"
+  #   url: "https://www.janpara.co.jp/"
+  # - name: "楽天市場"
+  #   url: "https://www.rakuten.co.jp/"
 
   keywords:
     # 各サイトでの検索キーワード
     - "マザーボード"
     - "ATX"
   
+  # 検索条件
+  search_condition:
+    # 上限価格
+    max_price: 30000
   # 各サイトでの取得する製品数
-  return_products_num: 5
+  return_products_num: 1
 
   result_items:
-    # 各サイトで見つかった製品ごとに取得する情報
-    - "製品名"
-    - "価格"
-    - "URL"
-    - "ATX or microATX"
-    - "M.2スロットの数"
+    # 各サイトで見つかった製品ごとに取得する情報の説明を定義。ユーザーは各値の説明を変更できます。
+    site_name: "Name of the website where the product was found (e.g., 'Amazon')."
+    product_name: "Title of the product."
+    price: "Price of the product in Japanese yen, as a numeric value."
+    url: "URL to the product page."
+    atx_or_microatx: "Indicates whether the product is for ATX or microATX; this value can be adjusted as needed."
+    m2_slot_num: "Number of available M.2 slots on the product (numeric)."
+
 
 # レポート生成で利用するモデル
 # ai_platform: "deepseek"
@@ -61,7 +67,9 @@ search_parameters:
 # report_model: "deepseek-reasoner"
 
 ai_platform: "google"
-report_model: "gemini-2.0-flash"
+# report_model: "gemini-2.0-flash"
+report_model: "gemini-2.0-flash-exp" # 無料中
+# report_model: "gemini-2.0-pro-exp-02-05" # 無料中
 # ai_platform: "openai"
 # report_model: "gpt-4o-mini"
 # report_model: "o1-mini"
