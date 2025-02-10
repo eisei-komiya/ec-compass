@@ -1,19 +1,7 @@
 # ai_report_generator.py
 import os  # 環境変数を扱うためのライブラリ
-try:
-    from dotenv import load_dotenv  # python-dotenv を使って.envファイルを読み込みます
-    load_dotenv()  # .env ファイルから環境変数をロード
-except ImportError:
-    print("python-dotenvがインストールされていません。必要に応じてインストールしてください。")
-
-from openai import OpenAI
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # OpenAI APIを利用するためのライブラリ
-
-# 環境変数 'OPENAI_API_KEY' からAPIキーを取得して設定します
-
 import json    # 辞書を文字列に変換するために利用
-
+import re
 
 def generate_report_with_ai(product_results, evaluation_criteria, top_n, report_model="gpt-4o-mini", ai_platform="openai"):
     """
@@ -37,6 +25,8 @@ def generate_report_with_ai(product_results, evaluation_criteria, top_n, report_
         "・各評価項目ごとに、メリットや改善点を詳しく解説してください。\n"
         "・カスタム評価基準も必ず反映してください。\n"
         "・ECサイトごとにトップ商品の特徴や比較点を記載し、視認性の高いレポートにしてください。"
+        "・レポートは、Markdown形式で作成してください。"
+        "・直接レポートのMarkdownを出力し、それ以外の出力はしないでください(コードベースで出力せず、プレーンテキストのMarkdownを出力してください。つまり、```などは不要です)"
     )
 
     combined_prompt = "あなたは、提供された製品情報と評価基準に基づき、詳細かつ分かりやすいMarkdown形式のレポートを作成するプロフェッショナルなアシスタントです。\n" + prompt
@@ -48,13 +38,11 @@ def generate_report_with_ai(product_results, evaluation_criteria, top_n, report_
         api_key = os.getenv("DEEPSEEK_API_KEY")
         llm = ChatOpenAI(model=report_model, api_key=api_key, temperature=0.7, **({"base_url": base_url} if base_url else {}))
     elif ai_platform.lower() == "google":
-        from langchain_google_vertexai import ChatVertexAI
+        # from langchain_google_vertexai import ChatVertexAI
+        from langchain_google_genai import ChatGoogleGenerativeAI
         api_key = os.getenv("GOOGLE_API_KEY")
-        # 修正: gemini-2.0-flash-exp が利用できない場合、代わりに gemini-2.0-flash を使用
-        if report_model == "gemini-2.0-flash-exp":
-            print("警告: モデル gemini-2.0-flash-exp は利用できません。代わりに gemini-2.0-flash を使用します。")
-            report_model = "gemini-2.0-flash"
-        llm = ChatVertexAI(model=report_model, api_key=api_key, temperature=0.7)
+        # llm = ChatVertexAI(model=report_model, api_key=api_key, temperature=0.7)
+        llm = ChatGoogleGenerativeAI(model=report_model, api_key=api_key, temperature=0.7)
     elif ai_platform.lower() == "openai":
         from langchain_openai import ChatOpenAI
         api_key = os.getenv("OPENAI_API_KEY")
@@ -67,8 +55,11 @@ def generate_report_with_ai(product_results, evaluation_criteria, top_n, report_
 
     # LangChainを使ってレポート生成
     try:
-        report = llm.predict(combined_prompt)
+        report = llm.invoke(combined_prompt).content
     except Exception as e:
         print(f"レポート生成中にエラーが発生しました: {e}. 使用しているAIプラットフォームやモデル設定を確認してください。")
         return "レポート生成に失敗しました。"
-    return report 
+    # ```から、\nまでを削除し\n```も削除
+    report = re.sub(r'^```.*?\n', '', report, flags=re.DOTALL)
+    report = re.sub(r'\n```$', '', report, flags=re.DOTALL)
+    return report

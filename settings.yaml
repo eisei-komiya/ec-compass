@@ -67,6 +67,7 @@ search_parameters:
 # report_model: "deepseek-reasoner"
 
 ai_platform: "google"
+# report_model: "gemini-1.5-flash"
 # report_model: "gemini-2.0-flash"
 report_model: "gemini-2.0-flash-exp" # 無料中
 # report_model: "gemini-2.0-pro-exp-02-05" # 無料中

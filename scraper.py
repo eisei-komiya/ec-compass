@@ -42,7 +42,7 @@ def construct_task(websites, keywords, result_items=None, return_products_num=5)
     
     # 4. 検索結果の上位件数に応じた処理指示（return_products_num が指定されていれば）
     
-    task += f"3. 検索結果ページにて上位 {return_products_num} 件の商品の必ず実際にクリックして新しいタブで開いてください。\n"
+    task += f"3. 検索結果ページにて上位 {return_products_num} 件の商品の必ず実際にクリックして新しいタブで開いてください。(抽出したリンクから遷移しないでください)\n"
     
     # 4. 各商品の結果タブでは、まずその商品の詳細ページに遷移してください。
     # 抽出結果は純粋なJSON形式のみで返し、余計な説明文は含めないでください。
@@ -51,10 +51,9 @@ def construct_task(websites, keywords, result_items=None, return_products_num=5)
             list_keys = ", ".join(result_items.keys())
         else:
             list_keys = "、".join(result_items)
-        task += "4. 各商品のタブで、" + list_keys + " に該当する情報のみを抽出して記憶してください。抽出結果はJSON形式のみで返してください。\n"
+        task += "4. 各商品のタブで、" + list_keys + " に該当する情報のみを抽出して記憶してください。抽出結果はJSON形式のみで返してください。戻るボタンを押して、次の商品の抽出に進みます。\n"
     else:
-        task += "4. 各商品のタブで、製品名、価格、URL の情報のみを抽出し、JSON形式で記憶してください。\n"
-    # task += "4. 各商品の結果タブで、まずその商品の詳細ページをクリック後、遷移した後URLの情報のみを抽出してください(JSONではなく、プレーンテキストで返すこと)。\n"
+        task += "4. 各商品のタブで、製品名、価格、URL の情報のみを抽出し、JSON形式で記憶してください。戻るボタンを押して、次の商品の抽出に進みます。\n"
     keys_description = ", ".join([f"'{key}': {desc}" for key, desc in result_items.items()])
     schema_description = (
         "A JSON object should be returned with a key 'results' mapping to a list of product objects. "
@@ -113,8 +112,10 @@ def run_browser_search(task, search_model="gpt-4o", ai_platform="openai"):
         agent = Agent(task=combined_task, llm=llm, use_vision=False, generate_gif=False)
         result = await agent.run()
 
-        # 結果が文字列として返される場合にそのまま出力
-        if isinstance(result, list) and len(result) > 0:
+        # 修正: Browser-Useのドキュメントに従い、resultがAgentHistoryListの場合はfinal_result()で最終結果のみを取得
+        if hasattr(result, "final_result"):
+            result_str = result.final_result()
+        elif isinstance(result, list) and len(result) > 0:
             try:
                 result_str = result[-1].message.content
             except AttributeError:
@@ -188,7 +189,7 @@ def scrape_data(websites, search_parameters):
         schemas = [
             ResponseSchema(name="results", description=schema_description)
         ]
-
+        print(f"result_str: \n{result_str}")
         # スキーマからOutputParserを作成し、LLM出力をパース
         output_parser = StructuredOutputParser.from_response_schemas(schemas)
         product_data = output_parser.parse(result_str)

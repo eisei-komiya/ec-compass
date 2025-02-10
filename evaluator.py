@@ -18,9 +18,4 @@ def evaluate_product(product_info, criteria):
         else:
             score += weight * (10 * threshold / product_info['price'])
 
-
-    # レビュー評価
-    if 'reviews' in product_info:
-        score += 0.1 * product_info['reviews']
-
     return score 
