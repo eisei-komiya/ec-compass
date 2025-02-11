@@ -9,6 +9,7 @@ import re  # 正規表現を扱うライブラリをインポートします
 from browser_use import Agent
 from browser_use.browser.browser import Browser, BrowserConfig
 from browser_use.browser.context import BrowserContextConfig
+from llm_factory import get_llm
 
 # LangChainのStructuredOutputParserを利用して、LLMの出力(result_str)をパース
 from langchain.output_parsers import StructuredOutputParser, ResponseSchema
@@ -16,106 +17,65 @@ from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 
 def construct_task(websites, keywords, result_items=None, return_products_num=5):
     """
-    ECサイト情報、検索キーワード、取得する製品情報、及び取得件数に基づき、
-    Browser-Useに渡すタスク命令文を生成します。
+    ECサイト情報、検索キーワード、および抽出すべき製品情報に基づき、
+    Browser-Use に渡すタスク命令文を生成します。
 
     引数:
-      websites: 各ECサイトの情報リスト（辞書形式、例: {'name': 'Amazon', 'url': 'https://www.amazon.co.jp/'}）
+      websites: 各ECサイト情報のリスト（辞書形式）
       keywords: 検索キーワードのリスト
-      result_items: 各サイトで取得する製品情報の項目リスト
-      return_products_num: 各サイトで返す商品の上位件数
+      result_items: 抽出すべき製品情報のキー（辞書またはリスト）
+      return_products_num: 各サイトで取得する上位商品の件数
 
     戻り値:
       タスク命令文（文字列）
     """
-    # 1. 初めに全体の手順を指示する文章を作成する
-    task = "以下の手順に従ってください。\n"
-    task += "1. search_parameters に記載された各サイト(以下のURL)に上から順番にアクセスしてください。\n"
-    
-    # 2. 各サイトの情報をリストアップ
-    task += "   対象サイト:\n"
+    lines = []
+    lines.append("以下の手順に従ってください。")
+    lines.append("1. search_parameters に記載された各サイトに順にアクセスしてください。")
+    lines.append("   対象サイト:")
     for site in websites:
-        task += "- {} (URL: {})\n".format(site.get("name", "不明"), site.get("url", "不明"))
-    
-    # 3. キーワードは空白区切りで検索するよう指示
-    task += "2. 各サイトごとに、空白区切りされたキーワード ({} ) を用いて検索を実施してください。\n".format(" ".join(keywords))
-    
-    # 4. 検索結果の上位件数に応じた処理指示（return_products_num が指定されていれば）
-    
-    task += f"3. 検索結果ページにて上位 {return_products_num} 件の商品の必ず実際にクリックして新しいタブで開いてください。(抽出したリンクから遷移しないでください)\n"
-    
-    # 4. 各商品の結果タブでは、まずその商品の詳細ページに遷移してください。
-    # 抽出結果は純粋なJSON形式のみで返し、余計な説明文は含めないでください。
+        lines.append(f"- {site.get('name', '不明')} (URL: {site.get('url', '不明')})")
+    lines.append(f"2. 各サイトごとに、空白区切りキーワード ({' '.join(keywords)}) を使用して検索してください。")
+    lines.append(f"3. 検索結果ページで上位 {return_products_num} 件の商品のdev要素を「実際に」クリックし、新しいタブで開いてください。（https://www.amazon.co.jp/dp/xxxxなどを抽出してそのリンクから遷移しないこと）")
     if result_items:
         if isinstance(result_items, dict):
-            list_keys = ", ".join(result_items.keys())
+            keys = ", ".join(result_items.keys())
         else:
-            list_keys = "、".join(result_items)
-        task += "4. 各商品のタブで、" + list_keys + " に該当する情報のみを抽出して記憶してください。抽出結果はJSON形式のみで返してください。戻るボタンを押して、次の商品の抽出に進みます。\n"
+            keys = "、".join(result_items)
+        lines.append(f"4. 各商品のタブで、{keys} に該当する情報のみを抽出し、JSON形式で記録してください。抽出後は戻って次へ進みます。")
     else:
-        task += "4. 各商品のタブで、製品名、価格、URL の情報のみを抽出し、JSON形式で記憶してください。戻るボタンを押して、次の商品の抽出に進みます。\n"
-    keys_description = ", ".join([f"'{key}': {desc}" for key, desc in result_items.items()])
-    schema_description = (
-        "A JSON object should be returned with a key 'results' mapping to a list of product objects. "
-        "Each product object must have the following keys: " + keys_description + " "
-        "Ensure that the output is pure valid JSON without additional text or explanations."
-    )
-    task += "JSONの形式は以下のようにしてください。\n" + schema_description + "\n"
-    # 6. タブのクローズとサイト間の遷移
-    task += "5. 次のサイトの情報取得に進んでください。\n"
-    
-    task += "6. すべてのサイトの各商品の詳細ページで情報抽出が完全に終了したら、記憶した全商品の情報をまとめた1つのJSONを出力してください。余計な説明文は含めないでください。\n"
-    
-    return task
+        lines.append("4. 各商品のタブで、製品名、価格、URL の情報のみを抽出し、JSON形式で記録してください。抽出後は戻って次へ進みます。")
+    if result_items and isinstance(result_items, dict):
+        keys_description = ", ".join([f"'{k}': {v}" for k, v in result_items.items()])
+        schema = ("A JSON object should be returned with key 'results' mapping to a list of product objects. "
+                  "Each product object must have the following keys: " + keys_description + " Ensure that the output is pure valid JSON without extra text.")
+        lines.append("JSONの形式は以下のようにしてください：")
+        lines.append(schema)
+    lines.append("5. 次のサイトへ進んでください。")
+    lines.append("6. 全サイトの情報抽出が終了したら、記憶した全商品の情報をまとめた1つのJSONを出力してください。")
+    return "\n".join(lines)
 
 
 def run_browser_search(task, search_model="gpt-4o", ai_platform="openai"):
     """
-    非同期でBrowser-Useのエージェントを使い、指定されたタスク命令文を実行して結果を取得します。
+    Browser-Use エージェントを使い、指定されたタスク命令文を実行して結果を取得します。
 
     引数:
-      task: エージェントに渡すタスク命令文（文字列）
-      search_model: 使用する言語モデルのモデル名
+      task: タスク命令文（文字列）
+      search_model: 使用するLLMのモデル名
       ai_platform: 使用するAIプラットフォームの名前
 
     戻り値:
       エージェントの実行結果（文字列）
     """
     async def async_run():
-        # ai_platformに応じて適切なLLMをインスタンス化
-        if ai_platform.lower() == "deepseek":
-            from langchain_openai import ChatOpenAI
-            base_url = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
-            api_key = os.getenv("DEEPSEEK_API_KEY")
-            llm = ChatOpenAI(model=search_model, api_key=api_key, temperature=0.7, **({"base_url": base_url} if base_url else {}))
-        elif ai_platform.lower() == "google":
-            from langchain_google_vertexai import ChatVertexAI
-            api_key = os.getenv("GOOGLE_API_KEY")
-            llm = ChatVertexAI(model=search_model, api_key=api_key, temperature=0.7)
-        elif ai_platform.lower() == "openai":
-            from langchain_openai import ChatOpenAI
-            api_key = os.getenv("OPENAI_API_KEY")
-            llm = ChatOpenAI(model=search_model, api_key=api_key, temperature=0.7)
-        else:
-            from langchain_openai import ChatOpenAI
-            api_key = os.getenv("OPENAI_API_KEY")
-            llm = ChatOpenAI(model=search_model, api_key=api_key, temperature=0.7)
-
-        # 統合されたタスク命令文に従い、エージェントを作成・実行
+        llm = get_llm(ai_platform, search_model)
         combined_task = "以下の指示に従ってください。\n" + task
-        # browser = Browser(
-        #     config=BrowserConfig()
-        # )
-        # async with await browser.new_context() as context:
-        #     agent = Agent(task=combined_task, llm=llm, browser_context=context, use_vision=False, generate_gif=False)
-        #     result = await agent.run()
         agent = Agent(task=combined_task, llm=llm, use_vision=False, generate_gif=False)
         result = await agent.run()
-
-        # 修正: Browser-Useのドキュメントに従い、resultがAgentHistoryListの場合はfinal_result()で最終結果のみを取得
         if hasattr(result, "final_result"):
             result_str = result.final_result()
-        elif isinstance(result, list) and len(result) > 0:
+        elif isinstance(result, list) and result:
             try:
                 result_str = result[-1].message.content
             except AttributeError:
@@ -124,9 +84,7 @@ def run_browser_search(task, search_model="gpt-4o", ai_platform="openai"):
             result_str = result
         else:
             result_str = str(result)
-
         return result_str
-
     return asyncio.run(async_run())
 
 

@@ -30,8 +30,8 @@ search_parameters:
   # search_model: "o1-mini"
   # search_model: "o1-preview"
   websites:
-  # - name: "価格.com"
-  #   url: "https://kakaku.com/"
+  - name: "価格.com"
+    url: "https://kakaku.com/"
   - name: "Amazon"
     url: "https://www.amazon.co.jp/ref=nav_logo"
   # - name: "じゃんぱら"
@@ -49,7 +49,7 @@ search_parameters:
     # 上限価格
     max_price: 30000
   # 各サイトでの取得する製品数
-  return_products_num: 1
+  return_products_num: 2
 
   result_items:
     # 各サイトで見つかった製品ごとに取得する情報の説明を定義。ユーザーは各値の説明を変更できます。
