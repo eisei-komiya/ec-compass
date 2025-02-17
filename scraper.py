@@ -36,15 +36,15 @@ def construct_task(websites, keywords, result_items=None, return_products_num=5)
     for site in websites:
         lines.append(f"- {site.get('name', '不明')} (URL: {site.get('url', '不明')})")
     lines.append(f"2. 各サイトごとに、空白区切りキーワード ({' '.join(keywords)}) を使用して検索してください。")
-    lines.append(f"3. 検索結果ページで上位 {return_products_num} 件の商品のdev要素を「実際に」クリックし、新しいタブで開いてください。（https://www.amazon.co.jp/dp/xxxxなどを抽出してそのリンクから遷移しないこと）")
+    lines.append(f"3. 検索結果ページで上位 {return_products_num} 件の商品をホイールクリックして新しいタブで開いてください。")
     if result_items:
         if isinstance(result_items, dict):
             keys = ", ".join(result_items.keys())
         else:
             keys = "、".join(result_items)
-        lines.append(f"4. 各商品のタブで、{keys} に該当する情報のみを抽出し、JSON形式で記録してください。抽出後は戻って次へ進みます。")
+        lines.append(f"4. 各商品のタブで、{keys} に該当する情報のみを抽出し、JSON形式で記録してください。")
     else:
-        lines.append("4. 各商品のタブで、製品名、価格、URL の情報のみを抽出し、JSON形式で記録してください。抽出後は戻って次へ進みます。")
+        lines.append("4. 各商品のタブで、製品名、価格、URL の情報のみを抽出し、JSON形式で記録してください。")
     if result_items and isinstance(result_items, dict):
         keys_description = ", ".join([f"'{k}': {v}" for k, v in result_items.items()])
         schema = ("A JSON object should be returned with key 'results' mapping to a list of product objects. "
