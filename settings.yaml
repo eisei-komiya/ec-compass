@@ -1,20 +1,21 @@
+# settings.yaml for EC Compass - E-Commerce製品比較CLIツール
+
+# =======================================
+# 【商品設定】
 product: "マザーボード"
+top_n: 5  # 上位選定件数
 
-# 上位選定件数 (ユーザーはこの値を変更可能)
-top_n: 5
-
+# =======================================
+# 【評価基準】
+# 商品を評価する際の重視ポイントを自然な言葉で記述してください
 criteria:
-  price:
-    weight: 0.4
-    threshold: 30000  # 上限価格（円）
-  quality:
-    weight: 0.3
-    checks:
-      # 条件
-      - "M.2スロット: '>=2'"
-  cost_performance:
-    weight: 0.3
+  # 例: "できるだけ安価な商品を探してください"
+  # 例: "3万円以下で、M.2スロットが2つ以上ある商品を優先的に探してください"
+  # 例: "初心者向けで、信頼性の高いメーカーの商品を探してください"
+  preferences: "できるだけ安価な商品を探してください"
 
+# =======================================
+# 【スクレイピング設定】
 search_parameters:
   # browser-use で使用するパラメータ
 
@@ -27,13 +28,21 @@ search_parameters:
   # search_model: "gemini-2.0-pro-exp-02-05" # 無料中
   ai_platform: "openai"
   search_model: "gpt-4o"  # browser-use推奨
-  # search_model: "o1-mini"
-  # search_model: "o1-preview"
+
+  # ブラウザの設定
+  browser_settings:
+    use_vision: true  # AIにブラウザの視覚情報を使用させるかどうか
+    # true: 画像認識を使用してより正確な情報抽出（処理は遅くなります）
+    # false: テキストベースの抽出のみ（処理は速くなります）
+
+  # 検索対象サイト
   websites:
-  - name: "価格.com"
-    url: "https://kakaku.com/"
-  - name: "Amazon"
-    url: "https://www.amazon.co.jp/ref=nav_logo"
+    - name: "価格.com"
+      url: "https://kakaku.com/"
+    - name: "Aliexpress" # 広告のXを押せないので、use_vision: true にしたほうがよい
+      url: "https://ja.aliexpress.com/"
+  # - name: "Amazon"
+  #   url: "https://www.amazon.co.jp/ref=nav_logo"
   # - name: "じゃんぱら"
   #   url: "https://www.janpara.co.jp/"
   # - name: "楽天市場"
@@ -50,28 +59,22 @@ search_parameters:
     max_price: 30000
   # 各サイトでの取得する製品数
   return_products_num: 2
-
   result_items:
-    # 各サイトで見つかった製品ごとに取得する情報の説明を定義。ユーザーは各値の説明を変更できます。
-    site_name: "Name of the website where the product was found (e.g., 'Amazon')."
-    product_name: "Title of the product."
-    price: "Price of the product in Japanese yen, as a numeric value."
-    url: "URL to the product page."
-    atx_or_microatx: "Indicates whether the product is for ATX or microATX; this value can be adjusted as needed."
-    m2_slot_num: "Number of available M.2 slots on the product (numeric)."
+    # 取得する項目 追加可能
+    site_name: "利用したECサイトの名称 (例: Amazon)"
+    product_name: "商品の正式なタイトル (名)"
+    price: "商品の価格（数値）"
+    url: "商品の詳細ページURL"
+    reviews: "口コミや評価情報（テキスト）"
+    details: "商品の特徴、仕様、説明などの詳細情報"
 
-
-# レポート生成で利用するモデル
-# ai_platform: "deepseek"
-# report_model: "deepseek-chat"
-# report_model: "deepseek-reasoner"
-
-ai_platform: "google"
-# report_model: "gemini-1.5-flash"
-# report_model: "gemini-2.0-flash"
-report_model: "gemini-2.0-flash-exp" # 無料中
-# report_model: "gemini-2.0-pro-exp-02-05" # 無料中
-# ai_platform: "openai"
-# report_model: "gpt-4o-mini"
-# report_model: "o1-mini"
-# report_model: "o1-preview"
+# =======================================
+# 【レポート生成設定】
+reporting:
+  ai_platform: "google"
+  report_model: "gemini-2.0-flash-exp"  # 無料中
+  # report_model: "gemini-2.0-pro-exp-02-05" # 無料中
+  # ai_platform: "openai"
+  # report_model: "gpt-4o-mini"
+  # report_model: "o1-mini"
+  # report_model: "o1-preview"

@@ -38,11 +38,7 @@ def construct_task(websites, keywords, result_items=None, return_products_num=5)
     lines.append(f"2. 各サイトごとに、空白区切りキーワード ({' '.join(keywords)}) を使用して検索してください。")
     lines.append(f"3. 検索結果ページで上位 {return_products_num} 件の商品をホイールクリックして新しいタブで開いてください。")
     if result_items:
-        if isinstance(result_items, dict):
-            keys = ", ".join(result_items.keys())
-        else:
-            keys = "、".join(result_items)
-        lines.append(f"4. 各商品のタブで、{keys} に該当する情報のみを抽出し、JSON形式で記録してください。")
+        lines.append("4. 各商品のタブで、商品名、価格、URL、口コミ情報、商品詳細情報（特徴、仕様、説明など）を抽出し、各情報を対応するキー（site_name, product_name, price, url, atx_or_microatx, m2_slot_num, reviews, details）に格納した上で、純粋なJSON形式で記録してください。")
     else:
         lines.append("4. 各商品のタブで、製品名、価格、URL の情報のみを抽出し、JSON形式で記録してください。")
     if result_items and isinstance(result_items, dict):
@@ -56,7 +52,7 @@ def construct_task(websites, keywords, result_items=None, return_products_num=5)
     return "\n".join(lines)
 
 
-def run_browser_search(task, search_model="gpt-4o", ai_platform="openai"):
+def run_browser_search(task, search_model="gpt-4o", ai_platform="openai", use_vision=True):
     """
     Browser-Use エージェントを使い、指定されたタスク命令文を実行して結果を取得します。
 
@@ -64,6 +60,7 @@ def run_browser_search(task, search_model="gpt-4o", ai_platform="openai"):
       task: タスク命令文（文字列）
       search_model: 使用するLLMのモデル名
       ai_platform: 使用するAIプラットフォームの名前
+      use_vision: ブラウザの視覚情報を使用するかどうか（True/False）
 
     戻り値:
       エージェントの実行結果（文字列）
@@ -71,7 +68,7 @@ def run_browser_search(task, search_model="gpt-4o", ai_platform="openai"):
     async def async_run():
         llm = get_llm(ai_platform, search_model)
         combined_task = "以下の指示に従ってください。\n" + task
-        agent = Agent(task=combined_task, llm=llm, use_vision=False, generate_gif=False)
+        agent = Agent(task=combined_task, llm=llm, use_vision=use_vision, generate_gif=False)
         result = await agent.run()
         if hasattr(result, "final_result"):
             result_str = result.final_result()
@@ -117,15 +114,17 @@ def scrape_data(websites, search_parameters):
         search_model = search_parameters.get("search_model", "gpt-4o")
         # settingsで指定されたai_platformを取得（指定がなければ'openai'を使用）
         ai_platform = search_parameters.get("ai_platform", "openai")
+        # browser_settingsからuse_visionの設定を取得（指定がなければTrueを使用）
+        use_vision = search_parameters.get("browser_settings", {}).get("use_vision", True)
 
         # Browser-Useの非同期処理を実行して結果の文字列を取得
-        result_str = run_browser_search(task_instruction, search_model, ai_platform)
+        result_str = run_browser_search(task_instruction, search_model, ai_platform, use_vision)
         # Define an explicit JSON schema for the product information with detailed field explanations.
         if ai_platform.lower() == "google":
             # For Google Cloud, use a simplified fixed JSON schema to avoid unsupported keys.
             schema_description = (
                 "A JSON object with key 'results', where results is an array of objects. "
-                "Each object must have the following properties: site_name (string), product_name (string), price (number), url (string), atx_or_microatx (string), m2_slot_num (number). "
+                "Each object must have the following properties: site_name (string), product_name (string), price (number), url (string). "
                 "Ensure that the output is pure valid JSON without extra text."
             )
         elif result_items and isinstance(result_items, dict) and len(result_items) > 0:
@@ -152,16 +151,6 @@ def scrape_data(websites, search_parameters):
         output_parser = StructuredOutputParser.from_response_schemas(schemas)
         product_data = output_parser.parse(result_str)
 
-        # Debug: Instead of JSON parsing, extract only the product page URL using regex.
-        # print("result_str: ", result_str)
-        # match = re.search(r'(https?://[^\s]+)', result_str)
-        # if match:
-        #     product_url = match.group(0)
-        #     print("Extracted Product URL:", product_url)
-        #     product_data = [{'url': product_url}]
-        # else:
-        #     print("No product URL found in the result.")
-        #     product_data = []
     except Exception as e:
         print("Browser-Useの実行またはJSONのパースに失敗しました。エラー:", e)
     return product_data
