@@ -1,0 +1,67 @@
+{
+  "results": [
+    {
+      "site_name": "価格.com",
+      "product_name": "MAG B650 TOMAHAWK WIFI",
+      "price": "23980",
+      "url": "https://kakaku.com/item/K0001476940/",
+      "manufacturer_url": "https://jp.msi.com/Motherboard/MAG-B650-TOMAHAWK-WIFI",
+      "reviews": [
+        "オーディオ系が欠点",
+        "コスパに優れたマザーボードです"
+      ],
+      "details": "ATX form factor, Socket AM5, AMD/B650 chipset, USB 3.2 Gen 2x2 Type-C, three PCIe 4.0x4 M.2 slots, Realtek 2.5GbE, AMD Wi-Fi 6E & Bluetooth 5.2, and RGB LED headers."
+    },
+    {
+      "site_name": "価格.com",
+      "product_name": "TUF GAMING B650-PLUS WIFI",
+      "price": "18980",
+      "url": "https://kakaku.com/item/K0001486550/",
+      "manufacturer_url": "https://www.asus.com/jp/motherboards-components/motherboards/tuf-gaming/tuf-gaming-b650-plus-wifi/",
+      "reviews": [
+        "普通に使えます。安定性に問題はなく、M.2 SSDが多数対応しています。",
+        "B650の一般的な良いM/Bだが、プチプチノイズがある。構成はRyzen 7800X3Dなど。"
+      ],
+      "details": "ATX form factor, AMD Socket AM5, PCIe 4.0, Wi-Fi 6, and dual M.2 slots."
+    },
+    {
+      "site_name": "価格.com",
+      "product_name": "ROG STRIX B650-A GAMING WIFI",
+      "price": "23209",
+      "url": "https://kakaku.com/item/K0001492982/",
+      "manufacturer_url": "https://rog.asus.com/jp/motherboards/rog-strix/rog-strix-b650-a-gaming-wifi-model/",
+      "reviews": "Rating: 4.48, 8 reviews",
+      "details": "ATX, Socket AM5, PCIe 5.0 M.2 slot, Intel 2.5GbE, AMD Wi-Fi 6E."
+    },
+    {
+      "site_name": "AliExpress",
+      "product_name": "Asus-X570 Phantom Gaming Motherboard",
+      "price": "13759",
+      "url": "https://ja.aliexpress.com/item/1005007096513942.html",
+      "manufacturer_url": "N/A",
+      "reviews": "4.5 (22 reviews)",
+      "details": "AMD 4, AM4, 4x DDR4, 128GB, PCIe 4.0, Ryzen compatibility."
+    },
+    {
+      "site_name": "AliExpress",
+      "product_name": "ROG STRIX-Z390-H-ゲーミングマザーボード",
+      "price": "13655",
+      "url": "https://ja.aliexpress.com/item/1005008365038955.html",
+      "manufacturer_url": "https://www.aliexpress.com/store/1380106",
+      "reviews": "Rating: 5.0, 1 review",
+      "details": "64GB, PCI-E3.0, HDMI, M.2, LGA 1151, DDR4, ATX."
+    },
+    {
+      "site_name": "AliExpress",
+      "product_name": "ASROCK-X570 Taichi ソケットマザーボード",
+      "price": "22540",
+      "url": "https://ja.aliexpress.com/item/1005008324175971.html",
+      "manufacturer_url": "https://www.asrock.com/",
+      "reviews": [
+        "製品はブラジルの基準によって非常に速く到着しました。すぐにテストしますが、どうやら彼女は4歳以上のプレートにはとても良いです。",
+        "AliExpress のお客様"
+      ],
+      "details": "AM4, DDR4, 128GB, M.2, ATX, compatible with Ryzen 5000 series."
+    }
+  ]
+}

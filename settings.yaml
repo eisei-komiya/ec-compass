@@ -3,30 +3,24 @@
 # =======================================
 # 【商品設定】
 product: "マザーボード"
-top_n: 5  # 上位選定件数
+top_n: 2  # 上位選定件数
 
 # =======================================
 # 【評価基準】
-# 商品を評価する際の重視ポイントを自然な言葉で記述してください
+# 商品を評価する際の重視ポイントを自然言語で記述してください
 criteria:
   # 例: "できるだけ安価な商品を探してください"
-  # 例: "3万円以下で、M.2スロットが2つ以上ある商品を優先的に探してください"
-  # 例: "初心者向けで、信頼性の高いメーカーの商品を探してください"
-  preferences: "できるだけ安価な商品を探してください"
+  # 例: "3万円以下で、M.2スロットが2つ以上ある商品を優先してください"
+  # 例: "初心者向けで、信頼性の高いメーカーの商品の評価を高くしてください"
+  preferences: "不具合の報告が少ない商品を優先してください。"
 
 # =======================================
 # 【スクレイピング設定】
 search_parameters:
-  # browser-use で使用するパラメータ
-
-  # ai_platform: "deepseek"
-  # search_model: "deepseek-chat"
-  # search_model: "deepseek-reasoner"
-  # ai_platform: "google"
-  # search_model: "gemini-2.0-flash"
-  # search_model: "gemini-2.0-flash-exp" # 無料中
-  # search_model: "gemini-2.0-pro-exp-02-05" # 無料中
+  # Browser-useの設定
+  # ai_platform: deepseek, openai, google
   ai_platform: "openai"
+  # search_model: gpt-4o, gpt-4o-mini, o1-mini, o1-preview, gemini-2.0-flash, gemini-2.0-flash-exp, gemini-2.0-pro-exp-02-05, deepseek-chat, deepseek-reasoner
   search_model: "gpt-4o"  # browser-use推奨
 
   # ブラウザの設定
@@ -34,47 +28,62 @@ search_parameters:
     use_vision: true  # AIにブラウザの視覚情報を使用させるかどうか
     # true: 画像認識を使用してより正確な情報抽出（処理は遅くなります）
     # false: テキストベースの抽出のみ（処理は速くなります）
+    visit_official_site: true  # 商品の公式サイトも訪問して詳細情報を取得するか
+    # true: より正確な情報が得られますが、処理時間、API料金が長くなります
+    # false: ECサイトのhtml情報のみを使用します
+    reviews_per_product: 4  # 各商品から取得する口コミの数
+    # 0: 口コミを取得しない
+    # 1以上: 指定した数の最新の口コミを取得（評価の高い順）
+    # -1: 全ての口コミを取得（処理時間とAPIコストが増加します）
 
   # 検索対象サイト
   websites:
     - name: "価格.com"
       url: "https://kakaku.com/"
-    - name: "Aliexpress" # 広告のXを押せないので、use_vision: true にしたほうがよい
+    - name: "Aliexpress"
       url: "https://ja.aliexpress.com/"
-  # - name: "Amazon"
-  #   url: "https://www.amazon.co.jp/ref=nav_logo"
-  # - name: "じゃんぱら"
-  #   url: "https://www.janpara.co.jp/"
-  # - name: "楽天市場"
-  #   url: "https://www.rakuten.co.jp/"
 
+  # 検索キーワード
   keywords:
-    # 各サイトでの検索キーワード
     - "マザーボード"
     - "ATX"
   
   # 検索条件
   search_condition:
-    # 上限価格
-    max_price: 30000
+    # 価格範囲
+    price_range:
+      max: 30000  # 上限価格
+      min: 10000  # 下限価格
+
+    # 商品の並び順（サイトによってサポートされる並び順は異なります）
+    sort_by: "価格の安い順"  # 選択肢: "価格の安い順" / "価格の高い順" / "人気順" / "レビュー評価順"
+
+    # 詳細な絞り込み条件を自然言語で指定
+    # 例: "AMD Socket AM5対応のみ" / "DDR5メモリ対応" / "M.2スロットが2つ以上"
+    # 例: "ASUSまたはMSIのみ" / "ゲーミング向け" / "Mini-ITX規格"
+    # サイトによって使用できる絞り込み条件は異なりますが、AIが適切に解釈して適用します
+    filters: [
+      "AMD Socket AM5対応のみ",
+      "M.2スロットが2つ以上"
+    ]
+
   # 各サイトでの取得する製品数
-  return_products_num: 2
+  return_products_num: 3
+
+  # 取得する情報項目
   result_items:
-    # 取得する項目 追加可能
     site_name: "利用したECサイトの名称 (例: Amazon)"
-    product_name: "商品の正式なタイトル (名)"
+    product_name: "商品の正式なタイトル"
     price: "商品の価格（数値）"
     url: "商品の詳細ページURL"
+    manufacturer_url: "メーカーの公式サイトURL"
     reviews: "口コミや評価情報（テキスト）"
-    details: "商品の特徴、仕様、説明などの詳細情報"
+    details: "商品の特徴、仕様、説明などの詳細情報（ECサイトおよび公式サイトから取得した情報を含む）"
 
 # =======================================
 # 【レポート生成設定】
 reporting:
+  # ai_platform: deepseek, openai, google
   ai_platform: "google"
+  # report_model: gpt-4o, gpt-4o-mini, o1-mini, o1-preview, gemini-2.0-flash, gemini-2.0-flash-exp, gemini-2.0-pro-exp-02-05, deepseek-chat, deepseek-reasoner
   report_model: "gemini-2.0-flash-exp"  # 無料中
-  # report_model: "gemini-2.0-pro-exp-02-05" # 無料中
-  # ai_platform: "openai"
-  # report_model: "gpt-4o-mini"
-  # report_model: "o1-mini"
-  # report_model: "o1-preview"
